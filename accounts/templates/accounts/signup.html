@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}会員登録{% endblock %}
+
+{% block main %}
+<div align="center">
+  <form method="post" class="col-6">
+    {% csrf_token %}
+    {% include 'includes/signup_form.html' %}
+    <br>
+    <button type="submit" class="btn btn-primary">登録</button>
+  </form>
+</div>
+
+{% endblock %}
+
+
+

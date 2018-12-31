@@ -1,0 +1,9 @@
+﻿django
+channels
+pybitflyer
+selenium
+markdown
+pygments
+beautifulsoup4
+django-bootstrap4
+pywin32
