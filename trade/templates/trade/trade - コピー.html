@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Trade{% endblock %}
+
+{% block main %}
+  <div align="center">
+    <h5>username : {{ username }}</h5>
+    <h5>cash : {{ cash }}</h5>
+  </div>
+
+<br><br><br>
+
+<div class="container">
+  <div class="row">
+    
+    <div class="col-4"align="center">
+      <form action="" method="post">
+        {% csrf_token %}
+        <h4>BTC/JPY</h4>
+        best_ask : <span id='btc_jpy_best_ask'></span><br>
+        best_bid : <span id='btc_jpy_best_bid'></span><br><br>
+        <p>数量 : <input type="text" name="btc_jpy_amount" size="5"></p>
+        <input type="submit" value="売り" name="btc_jpy_make_order" class="btn btn-danger">
+        <input type="submit" value="買い" name="btc_jpy_make_order" class="btn btn-warning">
+      </form>
+    </div>
+    
+    <div class="col-4" align="center">
+      <form action="" method="post">
+        {% csrf_token %}
+        <h4>USD/JPY</h4>
+        best_ask : <span id='usd_jpy_best_ask'></span><br>
+        best_bid : <span id='usd_jpy_best_bid'></span><br><br>
+        <p>数量 : <input type="text" name="usd_jpy_amount" size="5"></p>
+        <input type="submit" value="売り" name="usd_jpy_make_order" class="btn btn-danger">
+        <input type="submit" value="買い" name="usd_jpy_make_order" class="btn btn-warning">
+      </form>
+    </div>
+    
+    
+    <div class="col-4" align="center">
+      <form action="" method="post">
+        {% csrf_token %}
+        <h4>日経225/JPY</h4>
+        best_ask : <span id='nikkei_jpy_best_ask'></span><br>
+        best_bid : <span id='nikkei_jpy_best_bid'></span><br><br>
+        <p>数量 : <input type="text" name="nikkei_jpy_amount" size="5"></p>
+        <input type="submit" value="売り" name="nikkei_jpy_make_order" class="btn btn-danger">
+        <input type="submit" value="買い" name="nikkei_jpy_make_order" class="btn btn-warning">
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+<br><br><br>
+<h5>現在取引中の注文</h5>
+  <table border="1" class="table table-striped">
+    <tr>
+      <th>ペア</th>
+      <th>売・買</th>
+      <th>数量</th>
+      <th>建値</th>
+      <th>日付</th>
+      <th></th>
+    </tr>
+    {% for position in position_list %}
+      <tr>
+        <td>{{ position.0 }}</td>
+        <td>{{ position.1 }}</td>
+        <td>{{ position.2 }}</td>
+        <td>{{ position.3 }}</td>
+        <td>{{ position.4 }}</td>
+        <td><form action="" method="">
+          {% csrf_token %}
+          <input type="submit" id="liquidation" value="ポジションの清算" class="btn btn-primary">
+          <input type="hidden" value={{ position.0 }}{{ position.1 }}{{ position.2 }}{{ position.3 }}{{ position.5 }} name="liquidation">
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+
+
+
+{% endblock %}
+
+{% block JavaScript %}
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+      var username = '{{ username }}';
+      var socket = new WebSocket('ws://' + window.location.host + '/ws/trade/' + username + '/');
+      
+      socket.onopen = function open() {
+        console.log('WebSockets connection created.');
+      };
+      
+      socket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var btc_jpy_best_bid = data['btc_jpy_best_bid'];
+        var btc_jpy_best_ask = data['btc_jpy_best_ask'];
+        var usd_jpy_best_bid = data['usd_jpy_best_bid'];
+        var usd_jpy_best_ask = data['usd_jpy_best_ask'];
+        var nikkei_jpy_best_bid = data['nikkei_jpy_best_bid'];
+        var nikkei_jpy_best_ask = data['nikkei_jpy_best_ask'];
+        var btc_jpy_best_bid_element = document.getElementById('btc_jpy_best_bid');
+        var btc_jpy_best_ask_element = document.getElementById('btc_jpy_best_ask');
+        var usd_jpy_best_bid_element = document.getElementById('usd_jpy_best_bid');
+        var usd_jpy_best_ask_element = document.getElementById('usd_jpy_best_ask');
+        var nikkei_jpy_best_bid_element = document.getElementById('nikkei_jpy_best_bid');
+        var nikkei_jpy_best_ask_element = document.getElementById('nikkei_jpy_best_ask');
+        btc_jpy_best_bid_element.textContent = btc_jpy_best_bid.toLocaleString();
+        btc_jpy_best_ask_element.textContent = btc_jpy_best_ask.toLocaleString();
+        usd_jpy_best_bid_element.textContent = usd_jpy_best_bid.toLocaleString();
+        usd_jpy_best_ask_element.textContent = usd_jpy_best_ask.toLocaleString();
+        nikkei_jpy_best_bid_element.textContent = nikkei_jpy_best_bid.toLocaleString();
+        nikkei_jpy_best_ask_element.textContent = nikkei_jpy_best_ask.toLocaleString();
+      };
+      
+      socket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+      };
+      
+      document.getElementById("liquidation").onclick = function() {
+        console.log("push bottun");
+        socket.send("push bottun");
+      };
+      
+    </script>
+{% endblock %}
+
+

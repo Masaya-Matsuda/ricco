@@ -30,7 +30,6 @@ def trade(request):
 	trader = Trader.objects.get(username=username)
 	cash = trader.cash
 	token = trader.token
-	btc_jpy_ticker = api.ticker(product_code="BTC_JPY")
 	print(request.body.decode())
 	if request.method == "POST":
 		str_body = request.body.decode()
@@ -41,26 +40,36 @@ def trade(request):
 		else:
 			token_bool = True
 			change_token(username, csrf_token)
-		btc_jpy_ticker = api.ticker(product_code="BTC_JPY")
-		make_order = request.POST.get("btc_jpy_make_order")
+		
+		btc_jpy_order = request.POST.get("btc_jpy_make_order")
+		usd_jpy_order = request.POST.get("usd_jpy_make_order")
+		nikkei_jpy_order = request.POST.get("nikkei_jpy_make_order")
 		liquidation = request.POST.get("liquidation")
 		print(liquidation)
 		print(type(liquidation))
 		
 		if token_bool:
-			if make_order:
-				new_amount = round(random.random(), 3)
-				dict = make_position(make_order, new_amount, username)
+			if btc_jpy_order:
+				amount = request.POST.get("btc_jpy_amount")
+				dict = make_position(btc_jpy_order, amount, username)
+			
+			if usd_jpy_order:
+				amount = request.POST.get("usd_jpy_amount")
+				dict = make_position(usd_jpy_order, amount, username)
+			
+			if nikkei_jpy_order:
+				amount = request.POST.get("nikkei_jpy_amount")
+				dict = make_position(nikkei_jpy_order, amount, username)
 			
 			if liquidation:
 				positions = Position.objects.filter(trader=username)
 				for p in positions:
 					server_liquidation = liquidation
-					client_liquidation = p.pair + p.ls + str(p.amount) + str(p.price) + str(p.order_date)
+					client_liquidation = p.pair + p.ls + str(p.amount) + str(p.price) + str(p.timestamp)
 					if server_liquidation == client_liquidation:
 						print("=============")
 						print("Liquidation")
-						liquidate(username, p.pair, p.ls, p.amount, p.price, p.order_date)
+						liquidate(username, p.pair, p.ls, p.amount, p.price, p.timestamp)
 		else:
 			print("not token_bool")
 	
@@ -75,12 +84,10 @@ def trade(request):
 		ls = p.ls
 		amount = p.amount
 		price = p.price
-		order_date = datetime.fromtimestamp(int(p.order_date)).strftime("%Y/%m/%d %H:%M:%S")
-		timestamp = p.order_date
+		order_date = datetime.fromtimestamp(int(p.timestamp)).strftime("%Y/%m/%d %H:%M:%S")
+		timestamp = p.timestamp
 		position_list.append([pair, ls, amount, price, order_date, timestamp])
 	dict = {
-	        "btc_jpy_best_bid":btc_jpy_ticker["best_bid"],
-	        "btc_jpy_best_ask":btc_jpy_ticker["best_ask"],
 		    "username":username,
 		    "cash":t.cash,
 		    "position_list":position_list
@@ -88,12 +95,12 @@ def trade(request):
 	return render(request, "trade/trade.html", dict)
 
 
-def liquidate(username, pair, ls, amount, price, order_date):
+def liquidate(username, pair, ls, amount, price, timestamp):
 	print("Liquidate")
 	t = Trader.objects.get(username=username)
 	t.cash += 1000
 	t.save()
-	Position.objects.get(pair=pair, ls=ls, amount=amount, price=price, trader=username, order_date=order_date).delete()
+	Position.objects.get(pair=pair, ls=ls, amount=amount, price=price, trader=username, timestamp=timestamp).delete()
 
 
 def make_position(make_order, new_amount, username):
@@ -110,7 +117,7 @@ def make_position(make_order, new_amount, username):
 		amount = new_position[2],
 		price = new_position[3],
 		trader = username,
-		order_date = time.time()
+		timestamp = time.time()
 	)
 	model_position.save()
 

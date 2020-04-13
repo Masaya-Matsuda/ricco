@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Untitled</title>
+</head>
+
+<body>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>サンプル</title>
+<script src="http://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script>
+$(function(){
+  var idx = 3;
+  //
+  $('#btn1').click(function(event){
+    $('#tbl1').append('<tr><td>' + (++idx) + '</td><td>xx</td><td>xx</td></tr>');
+  });
+
+  //
+  $('#tbl1').on("click", "tr", function(event){
+    $(this).remove();
+  });
+});
+</script>
+</head>
+<body>
+  <input type="button" id="btn1" value="行追加">
+  <table id="tbl1">
+    <tr><td>1</td><td>aa</td><td>aa</td></tr>
+    <tr><td>2</td><td>aa</td><td>aa</td></tr>
+    <tr><td>3</td><td>aa</td><td>aa</td></tr>
+  </table>
+</body>
+</html>
+
+</body>
+</html>

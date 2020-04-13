@@ -58,8 +58,7 @@ class ChatConsumer(WebsocketConsumer):
 			price = text_data_json["price"]
 			timestamp = text_data_json["timestamp"]
 			t = Trader.objects.get(username=username)
-			#profit = 
-			#t.cash = int(t.cash+profit)
+			t.cash += 1000
 			t.save()
 			Position.objects.get(pair=pair, ls=ls, amount=amount, price=price, trader=username, timestamp=timestamp).delete()
 			

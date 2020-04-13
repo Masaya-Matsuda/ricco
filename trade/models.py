@@ -16,9 +16,9 @@ class Position(models.Model):
 	amount = models.FloatField()
 	price = models.FloatField()
 	trader = models.CharField(max_length=1000)
-	order_date = models.FloatField()
+	timestamp = models.FloatField()
 	
 	def __str__(self):
-		return self.pair + self.ls + str(self.amount) + str(self.price) + str(self.trader) + str(self.order_date)
+		return self.pair + self.ls + str(self.amount) + str(self.price) + str(self.trader) + str(self.timestamp)
 
 

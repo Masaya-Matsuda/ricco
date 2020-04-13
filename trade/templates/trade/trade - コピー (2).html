@@ -55,8 +55,7 @@
 
 <br><br><br>
 <h5>現在取引中の注文</h5>
-<table border="1" class="table table-striped" id="position_table">
-  <tbody id="tbodyID">
+  <table border="1" class="table table-striped">
     <tr>
       <th>ペア</th>
       <th>売・買</th>
@@ -65,6 +64,39 @@
       <th>日付</th>
       <th></th>
     </tr>
+    {% for position in position_list %}
+      <tr>
+        <td>{{ position.0 }}</td>
+        <td>{{ position.1 }}</td>
+        <td>{{ position.2 }}</td>
+        <td>{{ position.3 }}</td>
+        <td>{{ position.4 }}</td>
+        <td><button type="button" id="liquidation" class="btn btn-primary">
+            <input type="hidden" value={{ position.0 }} id="position0">
+            <input type="hidden" value={{ position.1 }} id="position1">
+            <input type="hidden" value={{ position.2 }} id="position2">
+            <input type="hidden" value={{ position.3 }} id="position3">
+            <input type="hidden" value={{ position.4 }} id="position4">
+            <input type="hidden" value={{ position.5 }} id="position5">
+            ポジションの清算
+            </button>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+<br><br><br><br>
+
+<table border="1" class="table table-striped">
+  <tr>
+    <th>ペア</th>
+    <th>売・買</th>
+    <th>数量</th>
+    <th>建値</th>
+    <th>日付</th>
+    <th></th>
+  </tr>
+  <tbody id="tbodyID">
     <!-- ここをループ -->
   </tbody>
 </table>
@@ -123,29 +155,23 @@
           console.log("position_list")
           var position_list = data["position_list"]
           var tbody = document.getElementById('tbodyID');
-          //var tr = document.createElement('tr');
-          //tr.innerHTML = '<th>ペア</th><th>売・買</th><th>数量</th><th>建値</th><th>日付</th><th></th>';
-          //tbody.appendChild(tr);
-          
+
           for (var i=0,l=position_list.length;i<l;i++){
             var tr = document.createElement('tr');
             var position = position_list[i]
-            append_html = '';
-            
             for (j = 0; j < 5; j++){
-              append_html += '<td>' + position[j] + '</td>';
-              tbody.appendChild(tr);
+              var td = document.createElement('td');
+              td.innerHTML = position[j];
+              //td.innerHTML = '<input type="hidden" value=' + position[j] + ' id="position' + j +  '">';
+              tbody.appendChild(td);
             };
+            var td = document.createElement('td');
+            td.innerHTML = '<button type="button" id="liquidation" class="btn btn-primary">ポジションの清算</button>';
+            tbody.appendChild(td);
             
-            append_html += '<td><button type="button" id="liquidation" class="btn btn-primary" onclick="liquidate(this);" value="' 
-              + position[0] + '_' + position[1] + '_' + position[2] + '_' + position[3] + '_' + position[5] + '">ポジションの清算</button></td>';
-            
-            tr.innerHTML = append_html
             tbody.appendChild(tr);
           };
-          
-        
-        };//if ('position_list' in data) {
+        };
         
       };
       
@@ -153,48 +179,7 @@
         console.error('Chat socket closed unexpectedly');
       };
       
-          var liquidate = function(obj) {
-            console.log("clickされました！");
-            
-            var tbody = document.getElementById("tbodyID");
-            var tr = obj.parentNode.parentNode;
-            tbody.removeChild(tr);
-            
-            var table = document.getElementById("liquidation")
-            var position_str = document.getElementById("liquidation").value
-            var position = position_str.split('_');
-            var liquidation_json = {
-              "liquidation":true,
-              "username":"{{ username }}",
-              "pair":position[0],
-              "ls":position[1],
-              "amount":position[2],
-              "price":position[3],
-              "timestamp":position[4]
-            };//var liquidation_json = {
-            console.log(liquidation_json);
-            socket.send(JSON.stringify(liquidation_json));
-          };//document.getElementById("liquidation").onclick = function(e) {
-      
-    </script>
-{% endblock %}
-
-<!--
-        if ('position_list' in data) {
-          var tbody = document.getElementById('tbodyID');
-
-          for (i = 0; i < 5; i++){
-              var tr = document.createElement('tr');
-              for (j = 0; j < 5; j++){
-                  var td = document.createElement('td');
-                  td.innerHTML = 'こんにちは' + j;
-                  tbody.appendChild(td);
-              };
-              tbody.appendChild(tr);
-          };
-        };
-
-
+      document.getElementById("liquidation").onclick = function() {
         liquidation_json = {
           "liquidation":true,
           "username":"{{ username }}",
@@ -204,115 +189,11 @@
           "price":document.getElementById("position3").value,
           "timestamp":document.getElementById("position5").value
         };
-
-
-      document.getElementsByName("liquidation").onclick = function(e) {
-        console.log(e);
-        console.log("dscferferge");
-        //console.log(liquidation_json);
-        //socket.send(JSON.stringify(liquidation_json));
+        console.log(liquidation_json);
+        socket.send(JSON.stringify(liquidation_json));
       };
-
-
-      function removeList(obj) {
-        var tbody = document.getElementById("tbodyID");
-        var tr = obj.parentNode.parentNode;
-        tbody.removeChild(tr);
-        $("#tbodyID > tbody").empty();
-      };
-
-
-
-
-
-
-<br><br><br>
-<h5>現在取引中の注文</h5>
-  <table border="1" class="table table-striped">
-    <tr>
-      <th>ペア</th>
-      <th>売・買</th>
-      <th>建値</th>
-      <th>数量</th>
-      <th>日付</th>
-      <th></th>
-    </tr>
-    {% for position in position_list %}
-      <tr>
-        <td>{{ position.0 }}</td>
-        <td>{{ position.1 }}</td>
-        <td>{{ position.2 }}</td>
-        <td>{{ position.3 }}</td>
-        <td>{{ position.4 }}</td>
-        <td><form action="" method="post" name="liquidate" onsubmit="return check_liquidate()">
-          {% csrf_token %}
-          <p>値段 : <input type="text" name="liquidate_price" size="5"></p>
-          <input type="submit" value="ポジションの清算" class="btn btn-primary">
-          <input type="hidden" value={{ position.0 }}{{ position.1 }}{{ position.2 }}{{ position.3 }}{{ position.5 }} name="liquidation">
-          <input type="hidden" value=var result = items.ind name="liquidation_index">
-          </form>
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
-
-
-    function check_liquidate() {
-        console.log("check_liquidate() ");
-        var liquidation_index = document.getElementsByName("liquidate_index");
-        console.log(liquidation_index);
-        
-        var liquidate_price = document.liquidate[0].liquidate_price.value;
-        console.log(liquidate_price);
-        
-        type_liquidate_price = Number(liquidate_price);
-        console.log(type_liquidate_price);
-        
-        if(liquidate_price == "" || isNaN(type_liquidate_price)) {
-            alert("「ポジションの清算」の値段に0より大きい数字を半角で入力してください！");
-            return false;
-        } else {
-            if (Number(liquidate_price) <= 0) {
-                alert("「ポジションの清算」の値段に0より大きい数字を半角で入力してください！");
-                return false;
-            };
-        };
-    };
-
-
-    function check_liquidate(liquidate_index) {
-        console.log(liquidate_index);
-        
-        var liquidate_price = document.liquidate[liquidate_index].liquidate_price.value;
-        console.log(liquidate_price);
-        
-        type_liquidate_price = Number(liquidate_price);
-        console.log(type_liquidate_price);
-        
-        if(liquidate_price == "" || isNaN(type_liquidate_price)) {
-            alert("「ポジションの清算」の値段に0より大きい数字を半角で入力してください！");
-            return false;
-        } else {
-            if (Number(liquidate_price) <= 0) {
-                alert("「ポジションの清算」の値段に0より大きい数字を半角で入力してください！");
-                return false;
-            };
-        };
-    };
-
-
-    function check_liquidate(liquidate_index) {
-        console.log(liquidate_index);
-        
-        var liquidate_price = document.liquidate[liquidate_index].liquidate_price.value;
-        console.log(liquidate_price);
-        alert("Stop！");
-        return false;
-    };
-
--->
-
-
-
+      
+    </script>
+{% endblock %}
 
 

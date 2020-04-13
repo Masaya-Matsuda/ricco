@@ -2,6 +2,10 @@
 import os
 import sys
 
+"""
+cd "/c/Users/MATSUDA MASAYA/Ricco/Scripts/ricco"
+"""
+
 if __name__ == '__main__':
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ricco.settings')
     try:
